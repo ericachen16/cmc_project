@@ -4,6 +4,11 @@
         {
             list-style-type: none;
         }
+
+        /* div 
+        {
+            display: inline-block;
+        } */
     </style>
 </head>
 <form method='post'>
@@ -11,7 +16,11 @@
     {{form.as_p}}
     <input type="submit" value = "View Boxplots">
 </form>
-{{plot}}
+{{plot2|safe}}
+{{plot1|safe}}
+
+
+
 
 
 
