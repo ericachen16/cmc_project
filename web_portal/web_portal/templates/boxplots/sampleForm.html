@@ -1,0 +1,16 @@
+<head>
+    <style>
+        ul
+        {
+            list-style-type: none;
+        }
+    </style>
+</head>
+<form method='post'>
+    {% csrf_token %}
+    {{form.as_p}}
+    <input type="submit" value = "View Boxplots">
+</form>
+
+
+
