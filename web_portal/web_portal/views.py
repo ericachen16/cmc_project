@@ -39,7 +39,7 @@ def getUnknownMoleculeData(sampleNames):
         # handle multiclass
         df['isMulti'] = df['type'].str.contains('/')
         justMulti = df[df['isMulti']].groupby('levDistance', as_index=False)['numOfReads'].sum()
-        justMulti['lev_type'] = justMulti['levDistance'] + ' | Multiclass'
+        justMulti['lev_type'] = justMulti['levDistance'] + ' | multiclass'
         df.drop(df[df['isMulti']].index, inplace=True)
         df = pd.concat([df,justMulti])
     
@@ -59,7 +59,7 @@ def getMoleculeData(sampleNames):
         # handle multiclass
         df['isMulti'] = df['description'].str.contains('/')
         justMulti = df[df['isMulti']]
-        justMulti['description'] = 'Multiclass'
+        justMulti['description'] = 'multiclass'
         justMulti = justMulti.groupby('description', as_index=False)['numOfReads'].sum()
         df.drop(df[df['isMulti']].index, inplace=True)
         df = pd.concat([df,justMulti])
