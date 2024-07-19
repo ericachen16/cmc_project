@@ -1,25 +1,20 @@
 import os
 import pandas as pd
-import psycopg2
 from sqlalchemy import create_engine
 
-path = "/Users/ericachen/Desktop/sampleData/"
-
-def loadSamples():
-    dir_list = os.listdir(path)
-    print(dir_list)
-    for f in dir_list:
-        loadFile(f)
+path = '' # directory of where your dataset files are located goes here
 
 def loadFile(fileName):
-    loc = "/Users/ericachen/Desktop/sampleData/" + fileName
+    loc = path + fileName
     df = pd.read_csv(loc,sep='\t',skiprows=3,on_bad_lines='skip')
 
-    conn_string = "postgresql://postgres:1234@localhost:5432/parsedSample"
+    # connect to db
+    conn_string = 'postgresql://postgres:1234@localhost:5432/parsedSample'
     engine = create_engine(conn_string)
-    unkTableName = "web_portal_unknownmolecule"
-    globalTableName = "web_portal_molecule"
+    unkTableName = 'web_portal_unknownmolecule'
+    globalTableName = 'web_portal_molecule'
 
+    # unknown molecule analysis data
     start_row = df[df['Description'] == '# Unknown (unk) molecule analysis'].index[0]
     end_row = df[df['Description'] == '# Other frequency statistics'].index[0]
 
@@ -27,14 +22,16 @@ def loadFile(fileName):
     unkData.columns=unkData.iloc[0]
     unkData = unkData[1:]
 
-    unkData.insert(len(unkData.columns),"Sample Name", fileName)
+    unkData.insert(len(unkData.columns),'Sample Name', fileName)
 
-    globalData = df.iloc[:1].transpose().rename_axis("id")
+    # global view data
+    globalData = df.iloc[:1].transpose().rename_axis('id')
     globalData.columns = globalData.iloc[0]
-    globalData = globalData[1:].rename_axis("Description").reset_index()
+    globalData = globalData[1:].rename_axis('Description').reset_index()
 
-    globalData.insert(len(globalData.columns),"Sample Name", fileName)
+    globalData.insert(len(globalData.columns),'Sample Name', fileName)
 
+    # save to db
     unkData.to_sql(unkTableName, engine, if_exists='append', index=False)
     globalData.to_sql(globalTableName, engine, if_exists='append', index=False)
 

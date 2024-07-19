@@ -8,4 +8,4 @@ class SelectionForm(forms.Form):
     for n in names:
         options.append((n.name,n.name))
 
-    selected = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple,choices=options)
+    selected = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple,choices=options,label="Choose dataset(s)")
