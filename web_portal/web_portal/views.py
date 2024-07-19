@@ -15,8 +15,8 @@ def getSelectedSamples(request):
             requestedSample = form.cleaned_data["selected"]
             unkRes = getUnknownMoleculeData(requestedSample)
             globRes = getMoleculeData(requestedSample)
-            plot1 = generateBoxplot(unkRes, "UNKOnly")
-            plot2 = generateBoxplot(globRes,"GlobalView")
+            plot1 = generateBoxplot(unkRes, "UNKOnly",len(requestedSample))
+            plot2 = generateBoxplot(globRes,"GlobalView",len(requestedSample))
             return render(request, 'boxplots/sampleForm.html', {'form': form, 'plot1':plot1, 'plot2':plot2})
     else:
         form = SelectionForm()
@@ -54,13 +54,22 @@ def getMoleculeData(sampleNames):
     df_list = []
     
     for n in sampleNames: #speed
-        i = pd.DataFrame(Molecule.objects.filter(sampleSource__icontains=n).values('description','numOfReads'))
-        i['percent of reads (unnormalized)'] = (i['numOfReads']/i['numOfReads'].sum())*100
-        df_list.append(i)
+        df = pd.DataFrame(Molecule.objects.filter(sampleSource__icontains=n).values('description','numOfReads'))
+        df['isMulti'] = df['description'].str.contains('/')
+        justMulti = df[df['isMulti']]
+        print(justMulti)
+        justMulti['description'] = 'Multiclass'
+        justMulti = justMulti.groupby('description', as_index=False)['numOfReads'].sum()
+        df.drop(df[df['isMulti']].index, inplace=True)
+        df = pd.concat([df,justMulti])
+        
+        df['percent of reads (unnormalized)'] = (df['numOfReads']/df['numOfReads'].sum())*100
+        df_list.append(df)
    
     dfMain = pd.concat(df_list, ignore_index=True)
+    dfMain = dfMain[['description', 'percent of reads (unnormalized)']].copy()
     dfMain.rename(columns={'description':'type'}, inplace=True)
-    return dfMain
+    return dfMain.sort_values('type')
 
 def getFormattedDataFrame(df):
 
@@ -68,8 +77,9 @@ def getFormattedDataFrame(df):
 
 
 
-def generateBoxplot(df, plotName):
-    return px.box(df, y=df['percent of reads (unnormalized)'], x=df['type'], width=1200, height=600,color = 'type',title="SummaryTable:" + plotName, range_y=[0,None]).to_html()
+def generateBoxplot(df, plotName, numOfSamples):
+    t = "SummaryTable:" + plotName + " (n=" + str(numOfSamples) + " samples)"
+    return px.box(df, y=df['percent of reads (unnormalized)'], x=df['type'], width=1200, height=600,color = 'type',title=t, range_y=[0,None]).to_html()
 
 
 def trimTable(df, type):
