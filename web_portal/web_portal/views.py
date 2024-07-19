@@ -12,8 +12,8 @@ def getSelectedSamples(request):
             requestedSample = form.cleaned_data['selected']
 
             # dataframe with just type and percent
-            unkRes = getUnknownMoleculeData(requestedSample)
             globRes = getMoleculeData(requestedSample)
+            unkRes = getUnknownMoleculeData(requestedSample)
 
             # boxplot in html
             plot1 = generateBoxplot(globRes,'GlobalView',len(requestedSample))
