@@ -58,7 +58,7 @@ def getMoleculeData(sampleNames):
         
         # handle multiclass
         df['isMulti'] = df['description'].str.contains('/')
-        justMulti = df[df['isMulti']]
+        justMulti = df[df['isMulti']].copy()
         justMulti['description'] = 'multiclass'
         justMulti = justMulti.groupby('description', as_index=False)['numOfReads'].sum()
         df.drop(df[df['isMulti']].index, inplace=True)
